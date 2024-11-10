@@ -1,3 +1,4 @@
 #Actualización de archivos a ignorar para github
 
 *.idea
+__pycache__
