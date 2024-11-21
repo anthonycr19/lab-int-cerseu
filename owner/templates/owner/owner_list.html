@@ -4,35 +4,46 @@
     <p>¡Bienvenidos!</p>
 
     {# <p>{{ data.nombre }} tiene {{ data.edad }} años y es de {{ data.pais }}</p>#}
+    {% if data %}
+        {% for owner in data %}
+            <p><strong>Nombre: </strong>{{ owner.nombre }}</p>
+            <p><strong>Edad: </strong>{{ owner.edad }}</p>
+            <p><strong>País: </strong>{{ owner.pais }}</p>
+            {% if owner.edad > 18 %}
+                <p>Usted ya es mayor de edad</p>
+            {% else %}
+                <p>usted todavía no es mayor de edad</p>
+            {% endif %}
+
+            {% if owner.dni %}
+                {% if not owner.vigente %}
+                    <p>Su pase está por vencer</p>
+                {% else %}
+                    <p>Su pase está vigente</p>
+                {% endif %}
+            {% endif %}
+
+            {% comment %}{% for pokemon in owner.pokemons %}
+
+                <p> <strong>Su lista de pokemon es </strong>: {{ pokemon.nombre_p }}</p>
+                <p>Sus ataques son:</p>
+                {% for ataque in pokemon.ataques %}
+                    <p><strong>{{ ataque }}</strong></p>
+                {% endfor %}
+            {%  endfor %} {% endcomment %}
+        {% endfor %}
+    {% else %}
+        <p>No hay coincidencia de datos</p>
+    {% endif %}
 
     {% for owner in data %}
-        <p>{{ owner.nombre }} tiene {{ owner.edad }} años y es de {{ owner.pais }}</p>
+        <p><strong>Nombre de Owner: </strong> {{ owner.nombre | lower }}</p>
+        <p><strong>Cantidad de caracteres del nombre: </strong> {{ owner.nombre | length }} </p>
+        <p><strong>Uso del Pipe Slugify (filtros): </strong> {{ owner.nombre | slugify }} </p>
+        <p><strong>Uso del Pipe Upper (filtros): </strong> {{ owner.nombre | upper }} </p>
+        <p><strong>Uso del Pipe Cut (filtros): </strong> {{ owner.nombre | cut:" " }} </p>
 
-        {% if owner.edad > 18 %}
-            <p>Usted ya es mayor de edad</p>
-        {% else %}
-            <p>usted todavía no es mayor de edad</p>
-        {% endif %}
-
-        {% if owner.dni %}
-            {% if not owner.vigente %}
-                <p>Su pase está por vencer</p>
-            {% else %}
-                <p>Su pase está vigente</p>
-            {% endif %}
-        {% endif %}
-
-        {% comment %}{% for pokemon in owner.pokemons %}
-
-            <p> <strong>Su lista de pokemon es </strong>: {{ pokemon.nombre_p }}</p>
-            <p>Sus ataques son:</p>
-            {% for ataque in pokemon.ataques %}
-                <p><strong>{{ ataque }}</strong></p>
-            {% endfor %}
-        {%  endfor %} {% endcomment %}
     {% endfor %}
-
-
 
 
 {% endblock %}
