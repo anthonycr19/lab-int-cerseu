@@ -150,6 +150,12 @@ def owner_search(request):
     return render(request, 'owner/owner_search.html', context={'data': data_context, 'query': query})
 
 
+def owner_details(request):
+
+    data_context = Owner.objects.all()
+    return render(request, 'owner/owner_details.html', context={'data': data_context})
+
+
 def owner_create(request):
     print("REQUEST: {}".format(request.POST))
     form = OwnerForm(request.POST)
@@ -160,8 +166,30 @@ def owner_create(request):
         pais = form.cleaned_data['pais']
 
         form.save()
-        return redirect('owner_search')
+        return redirect('owner_details')
     else:
         form = OwnerForm()
 
     return render(request, 'owner/owner_create.html', {'form': form})
+
+
+def owner_delete(request, id_owner):
+    print("ID Owner: {}".format(id_owner))
+    owner = Owner.objects.get(id=id_owner)
+    owner.delete()
+
+    return redirect('owner_details')
+
+
+def owner_edit(request, id_owner):
+    owner = Owner.objects.get(id=id_owner)
+
+    form = OwnerForm(initial={'nombre': owner.nombre, 'edad': owner.edad, 'pais': owner.pais, 'dni': owner.dni})
+
+    if request.method == 'POST':
+        form = OwnerForm(request.POST, instance=owner)
+        if form.is_valid():
+            form.save()
+            return redirect('owner_details')
+
+    return render(request, 'owner/owner_edit.html', context={'form': form})
