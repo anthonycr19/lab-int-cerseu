@@ -1,7 +1,8 @@
+from django.db.models import F, Q
 from django.shortcuts import render, redirect
-
 from owner.models import Owner
 
+from owner.forms import OwnerForm
 
 # Create your views here.
 
@@ -51,7 +52,7 @@ def owner_list(request):
     # ]
 
     """Crear un objeto de una tabla en la BD"""
-    #p = Owner(nombre="Luis Mejia", edad=22, dni="77777777", pais="España", vigente=True)
+    #p = Owner(nombre="Luis Mejia", edad=29, dni="66666666", pais="Brasil", vigente=True)
     #p.save()
 
     """Obtener todos los elementos de una tabla de la BD"""
@@ -81,7 +82,7 @@ def owner_list(request):
     """Ordenar por cualquier atributo o campos de la tabla"""
 
     #data_context = Owner.objects.order_by("nombre")
-    #data_context = Owner.objects.order_by("-edad")
+    data_context = Owner.objects.order_by("edad")
 
     """Ordenar concatenando diferentes métodos ORM's"""
     #data_context = Owner.objects.filter(nombre="Luis Mejia").order_by("edad")
@@ -91,15 +92,41 @@ def owner_list(request):
     #data_context = Owner.objects.all()
 
     """Eliminar un dato específicamente"""
-    try:
-        data_context = Owner.objects.get(id=4)
-        data_context.delete()
-    except Owner.DoesNotExist:
-        data_context = []
+    # try:
+    #     data_context = Owner.objects.get(id=8)
+    #     data_context.delete()
+    # except Owner.DoesNotExist:
+    #     data_context = []
 
     """Actualización de datos en la BD a un cierto grupo de datos o un solo registro"""
 
-    Owner.objects.filter(pais__startswith="Es").update(edad=34)
+    #Owner.objects.filter(pais__startswith="Es").update(edad=34, nombre="Carmen")
+
+    """Utilizando F expressions"""
+
+    #Owner.objects.filter(edad=34).update(edad=F('edad') - 4)
+    #Owner.objects.filter(edad__lte=22).update(edad=F('edad') - 3)
+
+    # ORM actualización de edad menor a 25 sumarles el valor de 10 y que sean de 'Perú' o 'España'
+    #Owner.objects.filter(edad__lt=25).update()
+
+    """Consultas complejas"""
+    #query = Q(pais__startswith="Pe") | Q(pais__startswith="Br")
+    #data_context = Owner.objects.filter(query)
+
+    """Negar Q"""
+
+    query = Q(pais__startswith="Pe") & ~Q(edad=30)
+    data_context = Owner.objects.filter(query)
+    #data_context = Owner.objects.filter(query, edad__gte=30)
+
+    """Error de consulta"""
+    #query = Q(pais__startswith="Pe") | Q(pais__startswith="Br")
+    #data_context = Owner.objects.filter(edad=30, query)
+
+    """Crear una ORM compleja que termine en país con 'ña' y que inicie también con 'Pe' y con edad igual a 29"""
+    query = Q(pais__endswith="Pe") | Q()
+    data_context = Owner.objects.filter(query)
 
     return render(request, 'owner/owner_list.html', context={'data': data_context})
 
@@ -109,3 +136,32 @@ def owner_detail(request, id_owner):
 
     return render(request, 'owner/owner_list.html', context={'data': id_owner})
 
+
+def owner_search(request):
+
+    query = request.GET.get('q', '')
+    #print("Queryyyy: {}".format(query))
+
+    results = (
+        Q(nombre__icontains=query)
+    )
+    data_context = Owner.objects.filter(results)
+
+    return render(request, 'owner/owner_search.html', context={'data': data_context, 'query': query})
+
+
+def owner_create(request):
+    print("REQUEST: {}".format(request.POST))
+    form = OwnerForm(request.POST)
+
+    if form.is_valid():
+        nombre = form.cleaned_data['nombre']
+        edad = form.cleaned_data['edad']
+        pais = form.cleaned_data['pais']
+
+        form.save()
+        return redirect('owner_search')
+    else:
+        form = OwnerForm()
+
+    return render(request, 'owner/owner_create.html', {'form': form})
