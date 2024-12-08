@@ -1,11 +1,21 @@
-from django.db.models import F, Q
+from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from owner.models import Owner
+from rest_framework.response import Response
 
-from owner.forms import OwnerForm
+from apps.owner.models import Owner
+
+from apps.owner.forms import OwnerForm
 
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from rest_framework.decorators import api_view
+
+from django.core import serializers as ssr
+
+from apps.owner.serializers import OwnerSerializer
+
+
 # Create your views here.
 
 
@@ -130,7 +140,7 @@ def owner_list(request):
     query = Q(pais__endswith="Pe") | Q()
     data_context = Owner.objects.filter(query)
 
-    return render(request, 'owner/owner_list.html', context={'data': data_context})
+    return render(request, 'owner/templates/owner/owner_list.html', context={'data': data_context})
 
 
 def owner_detail(request, id_owner):
@@ -226,4 +236,21 @@ class OwnerDelete(DeleteView):
     template_name = 'owner/owner_confirm_delete.html'
 
 
+"""Serializers"""
 
+
+def ListOwnerSerializer(request):
+    list_owner = ssr.serialize('json', Owner.objects.all(), fields=["nombre", "pais", "edad", "dni"])
+
+    return HttpResponse(list_owner, content_type="application/json")
+
+
+@api_view(['GET'])
+def owner_api_view(request):
+
+    if request.method == 'GET':
+        print("Ingresó a GET")
+        queryset = Owner.objects.all()
+        serializers_class = OwnerSerializer(queryset, many=True)
+
+        return Response(serializers_class.data)

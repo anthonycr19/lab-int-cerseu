@@ -18,4 +18,10 @@ urlpatterns = [
     path('owner_create_vc', views.OwnerCreate.as_view(), name="owner_create_vc"),
     path('owner_edit_vc/<int:pk>', views.OwnerUpdate.as_view(), name="owner_edit_vc"),
     path('owner_delete_vc/<int:pk>', views.OwnerDelete.as_view(), name="owner_delete_vc"),
+
+    #URLs Serializers
+    path('owner_list_serializer/', views.ListOwnerSerializer, name="owner_list_ssr"),
+
+    #URLs DRF
+    path('owner_list_drf_def/', views.owner_api_view, name="owner_list_drf")
 ]
