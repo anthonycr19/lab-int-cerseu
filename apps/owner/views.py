@@ -10,7 +10,8 @@ from apps.owner.forms import OwnerForm
 
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from django.core import serializers as ssr
 
@@ -247,6 +248,7 @@ def ListOwnerSerializer(request):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def owner_api_view(request):
 
     if request.method == 'GET':
@@ -266,6 +268,7 @@ def owner_api_view(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def owner_details_view(request, pk):
     owner = Owner.objects.get(id=pk)
 
