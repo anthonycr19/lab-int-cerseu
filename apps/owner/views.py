@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from rest_framework.response import Response
+from rest_framework import status
 
 from apps.owner.models import Owner
 
@@ -245,7 +246,7 @@ def ListOwnerSerializer(request):
     return HttpResponse(list_owner, content_type="application/json")
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def owner_api_view(request):
 
     if request.method == 'GET':
@@ -253,4 +254,31 @@ def owner_api_view(request):
         queryset = Owner.objects.all()
         serializers_class = OwnerSerializer(queryset, many=True)
 
-        return Response(serializers_class.data)
+        return Response(data=serializers_class.data, status=status.HTTP_202_ACCEPTED)
+
+    elif request.method == 'POST':
+        print("DATA OWNER: {}".format(request.data))
+        serializers_class = OwnerSerializer(data=request.data)
+        if serializers_class.is_valid():
+            serializers_class.save()
+            return Response(serializers_class.data, status=status.HTTP_201_CREATED)
+        return Response(serializers_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def owner_details_view(request, pk):
+    owner = Owner.objects.get(id=pk)
+
+    if owner:
+        if request.method == 'GET':
+            serializers_class = OwnerSerializer(owner)
+            return Response(serializers_class.data, status=status.HTTP_200_OK)
+        elif request.method == 'PUT':
+            serializers_class = OwnerSerializer(owner, data=request.data)
+            if serializers_class.is_valid():
+                serializers_class.save()
+                return Response(serializers_class.data, status=status.HTTP_202_ACCEPTED)
+            return Response(serializers_class.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            owner.delete()
+            return Response('Owner ha sido eleminado correctamente de la BD.', status=status.HTTP_202_ACCEPTED)
